@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"appengine"
+	"appengine/urlfetch"
 )
 
 // Yo API endpoint.
@@ -25,10 +27,13 @@ func NewClient(token string) *Client {
 
 // Sends a "Yo" to all users who subscribe to the active
 // account. Expects a 201 response.
-func (c *Client) YoAll() error {
+func (c *Client) YoAll(r *http.Request) error {
+	context := appengine.NewContext(r)
+	httpClient := urlfetch.Client(context)
+
 	data := url.Values{}
 	data.Set("api_token", c.Token)
-	res, err := http.PostForm(YO_API+"/yoall/", data)
+	res, err := httpClient.PostForm(YO_API+"/yoall/", data)
 	if err != nil {
 		return err
 	}
@@ -44,11 +49,14 @@ func (c *Client) YoAll() error {
 
 // Sends a "Yo" to the specified user (who must subscribe)
 // to the active account. Expects a 201 response.
-func (c *Client) YoUser(username string) error {
+func (c *Client) YoUser(username string, r *http.Request) error {
+	context := appengine.NewContext(r)
+	httpClient := urlfetch.Client(context)
+
 	data := url.Values{}
 	data.Set("api_token", c.Token)
 	data.Set("username", username)
-	res, err := http.PostForm(YO_API+"/yo/", data)
+	res, err := httpClient.PostForm(YO_API+"/yo/", data)
 	if err != nil {
 		return err
 	}
